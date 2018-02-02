@@ -1,0 +1,6 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Classes\MHDShellExtension\shell]
+[HKEY_LOCAL_MACHINE\SOFTWARE\Classes\MHDShellExtension\shell\open]
+[HKEY_LOCAL_MACHINE\SOFTWARE\Classes\MHDShellExtension\shell\open\command]
+@="\"C:\\Program Files\\PROGRAM\\PROGRAM.exe\" \"%1\""

@@ -1,0 +1,2 @@
+reg save HKEY_LOCAL_MACHINE LM.hiv
+reg save HKEY_CLASSES_ROOT CR.hiv

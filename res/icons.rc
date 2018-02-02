@@ -1,0 +1,11 @@
+100 ICON unknown.ico
+101 ICON char.ico
+102 ICON uchar.ico
+103 ICON short.ico
+104 ICON ushort.ico
+105 ICON int.ico
+106 ICON uint.ico
+107 ICON long.ico
+108 ICON ulong.ico
+109 ICON float.ico
+110 ICON double.ico
