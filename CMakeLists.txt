@@ -29,6 +29,6 @@ TARGET_LINK_LIBRARIES(MHDIconHandler libmhd)
 
 ADD_LIBRARY(MHDPropertyStore SHARED
   MHDPropertyStore.h MHDPropertyStore.cpp
-  MHDPropertyStore.def res/icons.rc
+  MHDPropertyStore.def
   )
 TARGET_LINK_LIBRARIES(MHDPropertyStore libmhd)
