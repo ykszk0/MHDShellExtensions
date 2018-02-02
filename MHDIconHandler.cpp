@@ -10,7 +10,7 @@ static const CLSID CLSID_ExtractIconSample =
 { 0xdc2923e9, 0xa7c3, 0x49a8, { 0x99, 0x74, 0xf, 0x1a, 0x65, 0x18, 0x13, 0xbb } };
 const TCHAR g_szClsid[] = TEXT("{DC2923E9-A7C3-49A8-9974-0F1A651813BB}");
 const TCHAR g_szProgid[] = TEXT("MHDShellExtension");
-const TCHAR g_szExt[] = TEXT(".mhd");
+const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha") };
 
 LONG      g_lLocks = 0;
 HINSTANCE g_hinstDll = NULL;
@@ -246,9 +246,11 @@ STDAPI DllRegisterServer(void)
 	if (!CreateRegistryKey(HKEY_CLASSES_ROOT, szKey, TEXT("ThreadingModel"), TEXT("Apartment")))
 		return E_FAIL;
 
-	wsprintf(szKey, TEXT("%s"), g_szExt);
-	if (!CreateRegistryKey(HKEY_CLASSES_ROOT, szKey, NULL, (LPTSTR)g_szProgid))
-		return E_FAIL;
+  for (const auto &g_szExt : g_szExts) {
+    wsprintf(szKey, TEXT("%s"), g_szExt);
+    if (!CreateRegistryKey(HKEY_CLASSES_ROOT, szKey, NULL, (LPTSTR)g_szProgid))
+      return E_FAIL;
+  }
 
 	wsprintf(szKey, TEXT("%s\\shellex\\IconHandler"), g_szProgid);
 	if (!CreateRegistryKey(HKEY_CLASSES_ROOT, szKey, NULL, (LPTSTR)g_szClsid))
@@ -264,7 +266,9 @@ STDAPI DllUnregisterServer(void)
 	wsprintf(szKey, TEXT("CLSID\\%s"), g_szClsid);
 	SHDeleteKey(HKEY_CLASSES_ROOT, szKey);
 
-	SHDeleteKey(HKEY_CLASSES_ROOT, g_szExt);
+  for (const auto &g_szExt : g_szExts) {
+    SHDeleteKey(HKEY_CLASSES_ROOT, g_szExt);
+  }
 
 	SHDeleteKey(HKEY_CLASSES_ROOT, g_szProgid);
 
