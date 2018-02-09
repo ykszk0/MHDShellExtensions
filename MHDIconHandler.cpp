@@ -88,6 +88,19 @@ namespace
       return -100;
     }
   }
+  bool isRGBImage(const header_map_type &header)
+  {
+    auto it = header.find("ElementType");
+    if (it != header.end()) {
+      auto it2 = header.find("ElementNumberOfChannels");
+      if (it2 != header.end()) {
+        if (it->second == "MET_UCHAR" && it2->second == "3") {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }
 
 STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
@@ -99,6 +112,10 @@ STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT 
   lstrcpyn(szIconFile, szModulePath, cchMax);
   *pwFlags = 0;
   auto header = parse_header(read_header(m_szFilename));
+  if (isRGBImage(header)) {
+    *piIndex = -111;
+    return S_OK;
+  }
   auto it = header.find("ElementType");
   if (it != header.end()) {
     *piIndex = ElementType2Index(it->second);
