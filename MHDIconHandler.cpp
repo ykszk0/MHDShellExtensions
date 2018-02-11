@@ -111,16 +111,20 @@ STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT 
   GetModuleFileName(g_hinstDll,szModulePath, MAX_PATH);
   lstrcpyn(szIconFile, szModulePath, cchMax);
   *pwFlags = 0;
-  auto header = parse_header(read_header(m_szFilename));
-  if (isRGBImage(header)) {
-    *piIndex = -111;
-    return S_OK;
-  }
-  auto it = header.find("ElementType");
-  if (it != header.end()) {
-    *piIndex = ElementType2Index(it->second);
-  } else {
-    *piIndex = 0;
+  try {
+    auto header = parse_header(read_header(m_szFilename));
+    if (isRGBImage(header)) {
+      *piIndex = -111;
+      return S_OK;
+    }
+    auto it = header.find("ElementType");
+    if (it != header.end()) {
+      *piIndex = ElementType2Index(it->second);
+    } else {
+      *piIndex = 0;
+    }
+  } catch (std::exception &e) {
+    *piIndex = -100; // unknown icon
   }
   return S_OK;
 }
