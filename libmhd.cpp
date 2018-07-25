@@ -18,68 +18,63 @@ bool start_with(const char* str, const char* s)
 namespace
 {
 constexpr int max_header_size = 2048;
-constexpr int max_line_size = 512;
 }
 std::string read_header(const char* filename)
 {
-  int header_size = 0;
   char header[max_header_size];
-  header[0] = '\0';
-  char buf[max_line_size];
-  std::ifstream ifs(filename);
+  char *line = header;
+  std::ifstream ifs(filename, std::ios::in | std::ios::binary);
   if (ifs.fail()) {
     throw std::runtime_error(std::string("Failed to open file : ") + filename);
   }
-  for (int nol = 0; !ifs.eof(); ++nol) {
-    buf[0] = '\0';
-    for (int i = 0; i < max_line_size-1 && !ifs.eof(); ++i) {
-      ifs.get(buf[i]);
-      if (buf[i] == '\n') {
-        buf[i + 1] = '\0';
-        break;
+  for (int i = 0; i < max_header_size - 1 && !ifs.eof(); ++i) {
+    ifs.get(header[i]);
+    if (header[i] == '\n' || ifs.eof()) {
+      header[i + 1] = '\0';
+      if (start_with(line, "ElementDataFile"))
+      {
+        return header;
+      } else {
+        line = header + i + 1;
       }
-      if (++header_size > max_header_size) {
-        throw std::runtime_error(std::string("Invalid header : Too large"));
-      }
-    }
-    strcat(header, buf);
-    if (start_with(buf, "ElementDataFile"))
-    {
-      return header;
     }
   }
-  throw std::runtime_error(std::string("Invalid header : End of file"));
+  if (ifs.eof()) {
+    throw std::runtime_error(std::string("Invalid header : Unexpected end of file"));
+  } else {
+    throw std::runtime_error(std::string("Invalid header : Too large"));
+  }
   return "Unreachable";
 }
 
 std::string read_header(IStream * pstream)
 {
-  int header_size = 0;
   char header[max_header_size];
-  header[0] = '\0';
-  char buf[max_line_size];
-  char *buf_ptr = buf;
+  char *line = header;
   ULONG cbRead;
   HRESULT result = S_OK;
-  while (result != S_FALSE) {
-    buf[0] = '\0';
-    for (int i = 0; i < max_line_size-1; ++i) {
-      result = pstream->Read(buf+i, 1, &cbRead);
-      if (result == S_FALSE || buf[i] == '\n') {
-        buf[i + 1] = '\0';
-        break;
-      }
-      if (++header_size > max_header_size) {
-        throw std::runtime_error(std::string("Invalid header : Too large"));
+  for (int i = 0; i < max_header_size - 1; ++i) {
+    result = pstream->Read(header + i, 1, &cbRead);
+    if (result == S_FALSE) {
+      header[i] = '\0';
+      if (start_with(line, "ElementDataFile"))
+      {
+        return header;
+      } else {
+        throw std::runtime_error(std::string("Invalid header : Unexpected end of file"));
       }
     }
-    strcat(header, buf);
-    if (start_with(buf, "ElementDataFile"))
-    {
-      return header;
+    if (header[i] == '\n') {
+      header[i + 1] = '\0';
+      if (start_with(line, "ElementDataFile"))
+      {
+        return header;
+      } else {
+        line = header + i + 1;
+      }
     }
   }
-  throw std::runtime_error(std::string("Invalid header : End of file"));
+  throw std::runtime_error(std::string("Invalid header : Too large"));
   return "Unreachable";
 }
 
