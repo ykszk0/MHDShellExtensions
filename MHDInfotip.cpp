@@ -66,35 +66,27 @@ STDMETHODIMP_(ULONG) CQueryInfo::Release()
 	return m_cRef;
 }
 
-#include <string>
 STDMETHODIMP CQueryInfo::GetInfoTip(DWORD dwFlags, LPWSTR *ppwszTip)
 {
 	if (!ppwszTip)
 		return E_POINTER;
 
     constexpr int buf_size = 4096;
+    std::vector<wchar_t> w_header(buf_size);
     try {
       setlocale(LC_ALL, "");
       auto header = read_header(m_szInfotip);
-      std::vector<wchar_t> w_header(buf_size);
       if (header.empty()) {
         mbstowcs(w_header.data(), "Empty file.", buf_size);
       } else {
         mbstowcs(w_header.data(), header.c_str(), buf_size);
       }
-      *ppwszTip = (LPWSTR)CoTaskMemAlloc((lstrlenW(w_header.data()) + 1) * sizeof(WCHAR));
-      lstrcpyW(*ppwszTip, w_header.data());
-      return S_OK;
     } catch (std::exception &e) {
-      // show error
-      std::vector<wchar_t> w_error(buf_size);
-      mbstowcs(w_error.data(), e.what(), buf_size);
-      *ppwszTip = (LPWSTR)CoTaskMemAlloc((lstrlenW(w_error.data()) + 1) * sizeof(WCHAR));
-      lstrcpyW(*ppwszTip, w_error.data());
-      return S_OK;
+      mbstowcs(w_header.data(), e.what(), buf_size);
     }
-
-	return S_OK;
+    *ppwszTip = (LPWSTR)CoTaskMemAlloc((lstrlenW(w_header.data()) + 1) * sizeof(WCHAR));
+    lstrcpyW(*ppwszTip, w_header.data());
+    return S_OK;
 }
 
 STDMETHODIMP CQueryInfo::GetInfoFlags(DWORD *pdwFlags)

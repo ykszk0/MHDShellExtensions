@@ -31,25 +31,25 @@ std::string read_header(const char* filename)
     throw std::runtime_error(std::string("Failed to open file : ") + filename);
   }
   for (int nol = 0; !ifs.eof(); ++nol) {
-    int i = 0;
     buf[0] = '\0';
-    for (; i < max_line_size && !ifs.eof(); ++i) {
+    for (int i = 0; i < max_line_size-1 && !ifs.eof(); ++i) {
       ifs.get(buf[i]);
       if (buf[i] == '\n') {
+        buf[i + 1] = '\0';
         break;
       }
       if (++header_size > max_header_size) {
-        throw std::runtime_error(std::string("Too large header : ") + filename);
+        throw std::runtime_error(std::string("Invalid header : Too large"));
       }
     }
-    buf[i+1] = '\0';
     strcat(header, buf);
     if (start_with(buf, "ElementDataFile"))
     {
-      break;
+      return header;
     }
   }
-  return header;
+  throw std::runtime_error(std::string("Invalid header : End of file"));
+  return "Unreachable";
 }
 
 std::string read_header(IStream * pstream)
@@ -58,28 +58,29 @@ std::string read_header(IStream * pstream)
   char header[max_header_size];
   header[0] = '\0';
   char buf[max_line_size];
+  char *buf_ptr = buf;
   ULONG cbRead;
-  HRESULT result;
-  while (true) {
-    int i = 0;
+  HRESULT result = S_OK;
+  while (result != S_FALSE) {
     buf[0] = '\0';
-    for (; i < max_line_size; ++i) {
-      result = pstream->Read(buf + i, 1, &cbRead);
+    for (int i = 0; i < max_line_size-1; ++i) {
+      result = pstream->Read(buf+i, 1, &cbRead);
       if (result == S_FALSE || buf[i] == '\n') {
+        buf[i + 1] = '\0';
         break;
       }
       if (++header_size > max_header_size) {
-        throw std::runtime_error(std::string("Too large header"));
+        throw std::runtime_error(std::string("Invalid header : Too large"));
       }
     }
-    buf[i + 1] = '\0';
     strcat(header, buf);
-    if (start_with(buf, "ElementDataFile") || result == S_FALSE)
+    if (start_with(buf, "ElementDataFile"))
     {
-      break;
+      return header;
     }
   }
-  return header;
+  throw std::runtime_error(std::string("Invalid header : End of file"));
+  return "Unreachable";
 }
 
 std::string read_header(const wchar_t * wfilename)

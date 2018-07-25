@@ -273,24 +273,28 @@ STDMETHODIMP CPropertyStore::Initialize(IStream *pstream, DWORD grfMode)
   constexpr int buf_size = 1024;
   std::vector<wchar_t> w_buf(buf_size);
 
-  auto header = read_header(pstream);
-  auto header_map = parse_header(header);
-  {
-    auto it = header_map.find("DimSize");
-    if (it != header_map.end()) {
-      auto dim = it->second;
-      std::replace(dim.begin(), dim.end(), ' ', 'x');
-      mbstowcs(w_buf.data(), dim.c_str(), buf_size);
-      set_prop_str(propvar, m_pCache, w_buf.data(), PKEY_Image_Dimensions);
-      auto v = str2vec<int>(it->second, ' ');
-      // width
-      if (v.size() >= 1) {
-        set_prop_int(propvar, m_pCache, v[0], PKEY_Image_HorizontalSize);
-      }
-      // height
-      if (v.size() >= 2) {
-        set_prop_int(propvar, m_pCache, v[1], PKEY_Image_VerticalSize);
-      }
+  header_map_type header_map;
+  try {
+    auto header = read_header(pstream);
+    header_map = parse_header(header);
+  } catch (std::exception &e) {
+    mbstowcs(w_buf.data(), e.what(), buf_size);
+    set_prop_str(propvar, m_pCache, w_buf.data(), PKEY_Comment);
+  }
+  auto it = header_map.find("DimSize");
+  if (it != header_map.end()) {
+    auto dim = it->second;
+    std::replace(dim.begin(), dim.end(), ' ', 'x');
+    mbstowcs(w_buf.data(), dim.c_str(), buf_size);
+    set_prop_str(propvar, m_pCache, w_buf.data(), PKEY_Image_Dimensions);
+    auto v = str2vec<int>(it->second, ' ');
+    // width
+    if (v.size() >= 1) {
+      set_prop_int(propvar, m_pCache, v[0], PKEY_Image_HorizontalSize);
+    }
+    // height
+    if (v.size() >= 2) {
+      set_prop_int(propvar, m_pCache, v[1], PKEY_Image_VerticalSize);
     }
   }
   {
@@ -331,10 +335,10 @@ STDMETHODIMP CPropertyStore::Initialize(IStream *pstream, DWORD grfMode)
     }
   }
 
-	m_pStream = pstream;
-	m_pStream->AddRef();
+  m_pStream = pstream;
+  m_pStream->AddRef();
 
-	return S_OK;
+  return S_OK;
 }
 
 
