@@ -66,6 +66,7 @@ STDMETHODIMP_(ULONG) CQueryInfo::Release()
 	return m_cRef;
 }
 
+#include <string>
 STDMETHODIMP CQueryInfo::GetInfoTip(DWORD dwFlags, LPWSTR *ppwszTip)
 {
 	if (!ppwszTip)
@@ -76,7 +77,11 @@ STDMETHODIMP CQueryInfo::GetInfoTip(DWORD dwFlags, LPWSTR *ppwszTip)
       setlocale(LC_ALL, "");
       auto header = read_header(m_szInfotip);
       std::vector<wchar_t> w_header(buf_size);
-      mbstowcs(w_header.data(), header.c_str(), buf_size);
+      if (header.empty()) {
+        mbstowcs(w_header.data(), "Empty file.", buf_size);
+      } else {
+        mbstowcs(w_header.data(), header.c_str(), buf_size);
+      }
       *ppwszTip = (LPWSTR)CoTaskMemAlloc((lstrlenW(w_header.data()) + 1) * sizeof(WCHAR));
       lstrcpyW(*ppwszTip, w_header.data());
       return S_OK;

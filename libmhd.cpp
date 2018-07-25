@@ -32,6 +32,7 @@ std::string read_header(const char* filename)
   }
   for (int nol = 0; !ifs.eof(); ++nol) {
     int i = 0;
+    buf[0] = '\0';
     for (; i < max_line_size && !ifs.eof(); ++i) {
       ifs.get(buf[i]);
       if (buf[i] == '\n') {
@@ -58,10 +59,12 @@ std::string read_header(IStream * pstream)
   header[0] = '\0';
   char buf[max_line_size];
   ULONG cbRead;
+  HRESULT result;
   while (true) {
     int i = 0;
+    buf[0] = '\0';
     for (; i < max_line_size; ++i) {
-      auto result = pstream->Read(buf + i, 1, &cbRead);
+      result = pstream->Read(buf + i, 1, &cbRead);
       if (result == S_FALSE || buf[i] == '\n') {
         break;
       }
@@ -71,7 +74,7 @@ std::string read_header(IStream * pstream)
     }
     buf[i + 1] = '\0';
     strcat(header, buf);
-    if (start_with(buf, "ElementDataFile"))
+    if (start_with(buf, "ElementDataFile") || result == S_FALSE)
     {
       break;
     }

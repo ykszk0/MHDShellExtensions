@@ -126,7 +126,11 @@ STDMETHODIMP CPreviewHandler::DoPreview(VOID)
   auto header = read_header(m_pStream);
   header = correct_newline(header);
   std::vector<wchar_t> w_header(buf_size);
-  mbstowcs(w_header.data(), header.c_str(), buf_size);
+  if (header.empty()) {
+    mbstowcs(w_header.data(), "Empty file.", buf_size);
+  } else {
+    mbstowcs(w_header.data(), header.c_str(), buf_size);
+  }
   m_hwndPreview = CreateWindowEx(0, TEXT("EDIT"), w_header.data(), WS_CHILD | WS_VISIBLE | ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL, m_rc.left, m_rc.top, m_rc.right - m_rc.left, m_rc.bottom - m_rc.top, m_hwndParent, 0, 0, NULL);
 
 	if (m_hwndPreview == NULL)

@@ -5,10 +5,13 @@ ADD_LIBRARY(libmhd
 libmhd.h libmhd.cpp
 )
 
-# ADD_EXECUTABLE(test_mhd_parser
-#   mhd_parser.cpp
-#   )
-# target_link_libraries(test_mhd_parser libmhd)
+OPTION(BUILD_PARSER "Build parser for debugging" OFF)
+IF(BUILD_PARSER)
+  ADD_EXECUTABLE(test_mhd_parser
+    mhd_parser.cpp
+    )
+  TARGET_LINK_LIBRARIES(test_mhd_parser libmhd)
+ENDIF()
 
 ADD_DEFINITIONS(-D_UNICODE)
 ADD_LIBRARY(MHDInfotip SHARED
