@@ -122,7 +122,7 @@ STDMETHODIMP CPreviewHandler::DoPreview(VOID)
   if (m_hwndPreview != NULL || m_pStream == NULL)
     return E_FAIL;
 
-  constexpr int buf_size = 2048;
+  constexpr int buf_size = 4096;
   std::string header;
   std::vector<wchar_t> w_header(buf_size);
   try {

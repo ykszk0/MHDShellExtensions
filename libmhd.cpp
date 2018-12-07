@@ -17,7 +17,7 @@ bool start_with(const char* str, const char* s)
 
 namespace
 {
-constexpr int max_header_size = 2048;
+constexpr int max_header_size = 4096;
 }
 
 template <typename T>
@@ -31,6 +31,9 @@ std::string read_header_t(const T* filename)
   }
   for (int i = 0; i < max_header_size - 1 && !ifs.eof(); ++i) {
     ifs.get(header[i]);
+    if (header[i] == '\0') {
+      header[i] = '_';
+    }
     if (header[i] == '\n' || ifs.eof()) {
       header[i + 1] = '\0';
       if (start_with(line, "ElementDataFile"))
@@ -65,6 +68,9 @@ std::string read_header(IStream * pstream)
       } else {
         throw std::runtime_error(std::string("Invalid header : Unexpected end of file"));
       }
+    }
+    if (header[i] == '\0') {
+      header[i] = '_';
     }
     if (header[i] == '\n') {
       header[i + 1] = '\0';
