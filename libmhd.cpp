@@ -19,13 +19,15 @@ namespace
 {
 constexpr int max_header_size = 2048;
 }
-std::string read_header(const char* filename)
+
+template <typename T>
+std::string read_header_t(const T* filename)
 {
   char header[max_header_size];
   char *line = header;
   std::ifstream ifs(filename, std::ios::in | std::ios::binary);
   if (ifs.fail()) {
-    throw std::runtime_error(std::string("Failed to open file : ") + filename);
+    throw std::runtime_error(std::string("Failed to open file"));
   }
   for (int i = 0; i < max_header_size - 1 && !ifs.eof(); ++i) {
     ifs.get(header[i]);
@@ -78,12 +80,13 @@ std::string read_header(IStream * pstream)
   return "Unreachable";
 }
 
-std::string read_header(const wchar_t * wfilename)
+std::string read_header(const char * filename)
 {
-  constexpr int buf_size = 4096;
-  std::vector<char> filename(buf_size);
-  wcstombs(filename.data(), wfilename, buf_size);
-  return read_header(filename.data());
+  return read_header_t(filename);
+}
+std::string read_header(const wchar_t * filename)
+{
+  return read_header_t(filename);
 }
 
 std::map<std::string, std::string> parse_header(std::string header)
