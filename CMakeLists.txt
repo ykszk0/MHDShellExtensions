@@ -4,6 +4,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 ADD_LIBRARY(libmhd
 libmhd.h libmhd.cpp
 )
+ADD_LIBRARY(libnrrd
+libnrrd.h libnrrd.cpp
+)
+ADD_EXECUTABLE(debug_nrrd debug_nrrd.cpp)
+TARGET_LINK_LIBRARIES(debug_nrrd libnrrd)
 
 OPTION(BUILD_PARSER "Build parser for debugging" OFF)
 IF(BUILD_PARSER)
