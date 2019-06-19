@@ -7,6 +7,7 @@
 #include "MHDPropertyStore.h"
 #include <propkey.h>
 #include <algorithm>
+#include <vector>
 
 #pragma comment (lib, "propsys.lib")
 #pragma comment (lib, "shlwapi.lib")
