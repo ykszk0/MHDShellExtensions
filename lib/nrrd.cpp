@@ -1,22 +1,87 @@
 #include "nrrd.h"
 #include <fstream>
+#include <set>
+#include <tchar.h>
+// http://teem.sourceforge.net/nrrd/format.html
+namespace
+{
+  std::map<std::string, int> type2index = {
+    {"signed char",ParserBase::CharIcon},
+    {"int8",ParserBase::CharIcon},
+    {"int8_t",ParserBase::CharIcon},
+
+    {"uchar",ParserBase::UCharIcon},
+    {"unsigned char",ParserBase::UCharIcon},
+    {"uint8",ParserBase::UCharIcon},
+    {"uint8_t",ParserBase::UCharIcon},
+
+    {"short",ParserBase::ShortIcon},
+    {"short int",ParserBase::ShortIcon},
+    {"signed short",ParserBase::ShortIcon},
+    {"signed short int",ParserBase::ShortIcon},
+    {"int16",ParserBase::ShortIcon},
+    {"int16_t",ParserBase::ShortIcon},
+
+    {"ushort",ParserBase::UShortIcon},
+    {"unsigned short",ParserBase::UShortIcon},
+    {"unsigned short int",ParserBase::UShortIcon},
+    {"uint16",ParserBase::UShortIcon},
+    {"uint16_t",ParserBase::UShortIcon},
+
+    {"int",ParserBase::IntIcon},
+    {"signed int",ParserBase::IntIcon},
+    {"int32",ParserBase::IntIcon},
+    {"int32_t",ParserBase::IntIcon},
+
+    {"uint",ParserBase::UIntIcon},
+    {"unsigned int",ParserBase::UIntIcon},
+    {"uint32",ParserBase::UIntIcon},
+    {"uint32_t",ParserBase::UIntIcon},
+
+    {"longlong",ParserBase::LongIcon},
+    {"long long",ParserBase::LongIcon},
+    {"long long int",ParserBase::LongIcon},
+    {"signed long long",ParserBase::LongIcon},
+    {"signed long long int",ParserBase::LongIcon},
+    {"int64",ParserBase::LongIcon},
+    {"int64_t",ParserBase::LongIcon},
+
+    {"ulonglong",ParserBase::ULongIcon},
+    {"unsigned long long",ParserBase::ULongIcon},
+    {"unsigned long long int",ParserBase::ULongIcon},
+    {"uint64",ParserBase::ULongIcon},
+    {"uint64_t",ParserBase::ULongIcon},
+
+    {"float",ParserBase::FloatIcon},
+    {"double",ParserBase::DoubleIcon}
+  };
+  int ElementType2Index(const std::string &type)
+  {
+    auto it = type2index.find(type);
+    if (it != type2index.end()) {
+      return it->second;
+    } else {
+      return ParserBase::UnknownIcon;
+    }
+  }
+}
 
 namespace nrrd
 {
   constexpr int max_header_size = 4096;
 
-  // read file til terminator
-  std::string _read_header(const char* filename, const char* terminator, bool remove_terminator)
+  // read file til the terminator. no reccurent pattern is allowed in the terminator string
+  template <typename CharType>
+  std::string _read_header(const CharType* filename, const char* terminator, bool remove_terminator)
   {
     char header[max_header_size];
-    char *line = header;
     std::ifstream ifs(filename, std::ios::in);
     if (ifs.fail()) {
-      throw std::runtime_error(std::string("Failed to open file : ") + filename);
+      throw std::runtime_error(std::string("Failed to open file"));
     }
     auto terminator_size = strlen(terminator);
     int terminator_matched_index = 0;
-    // look for empty line
+    // look for terminator
     for (int i = 0; i < max_header_size - 1; ++i) {
       if (ifs.eof()) {
         throw std::runtime_error(std::string("Invalid header : Unexpected end of file"));
@@ -39,13 +104,24 @@ namespace nrrd
         terminator_matched_index = 0;
       }
     }
-    throw std::runtime_error(std::string("Invalid header : Too large"));
-    return "\0"; // unreachable
+    throw std::runtime_error(std::string("Invalid header : Too large\n\n"));
+    return ""; // unreachable
+  }
+
+  template <typename CharType>
+  std::string read_header_t(const CharType* filename)
+  {
+    return _read_header(filename, "\n\n", true);
   }
 
   std::string read_header(const char* filename)
   {
-    return _read_header(filename, "\n\n", true);
+    return read_header_t(filename);
+  }
+
+  std::string read_header(const TCHAR* filename)
+  {
+    return read_header_t(filename);
   }
 
   header_map_type::value_type parse_line(char* line, int line_size)
@@ -99,6 +175,16 @@ namespace nrrd
   }
 }
 
+Nrrd::Nrrd()
+{
+  ext_set_ = {TEXT(".nrrd")};
+}
+
+void Nrrd::read_header(const TCHAR * filename)
+{
+  header_ = nrrd::read_header(filename);
+}
+
 void Nrrd::read_header(const char * filename)
 {
   header_ = nrrd::read_header(filename);
@@ -107,4 +193,14 @@ void Nrrd::read_header(const char * filename)
 void Nrrd::parse_header()
 {
   map_ = nrrd::parse_header(header_);
+}
+
+int Nrrd::get_icon_index()
+{
+  auto it = map_.find("type");
+  if (it != map_.end()) {
+    return ElementType2Index(it->second);
+  } else {
+    return ParserBase::UnknownIcon;
+  }
 }

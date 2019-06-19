@@ -18,6 +18,42 @@ bool start_with(const char* str, const char* s)
 namespace
 {
 constexpr int max_header_size = 4096;
+
+  std::map<std::string,int> type2index = {
+    {"MET_CHAR",ParserBase::CharIcon}, 
+    {"MET_UCHAR",ParserBase::UCharIcon}, 
+    {"MET_SHORT",ParserBase::ShortIcon}, 
+    {"MET_USHORT",ParserBase::UShortIcon}, 
+    {"MET_INT",ParserBase::IntIcon},
+    {"MET_UINT",ParserBase::UIntIcon}, 
+    {"MET_LONG",ParserBase::LongIcon}, 
+    {"MET_ULONG",ParserBase::ULongIcon}, 
+    {"MET_FLOAT",ParserBase::FloatIcon},
+    {"MET_DOUBLE",ParserBase::DoubleIcon} 
+  };
+  int ElementType2Index(const std::string &type)
+  {
+    auto it = type2index.find(type);
+    if (it != type2index.end()) {
+      return it->second;
+    } else {
+      return ParserBase::UnknownIcon;
+    }
+  }
+  bool isRGBImage(const header_map_type &header)
+  {
+    auto it = header.find("ElementType");
+    if (it != header.end()) {
+      auto it2 = header.find("ElementNumberOfChannels");
+      if (it2 != header.end()) {
+        if (it->second == "MET_UCHAR" && it2->second == "3") {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
 }
 
 template <typename T>
@@ -131,6 +167,15 @@ std::map<std::string, std::string> parse_header(std::string header)
   }
   return map;
 }
+Mhd::Mhd()
+{
+  ext_set_ = {TEXT(".mhd"), TEXT(".mha")};
+}
+
+void Mhd::read_header(const TCHAR * filename)
+{
+  header_ = ::read_header(filename);
+}
 
 void Mhd::read_header(const char * filename)
 {
@@ -140,4 +185,17 @@ void Mhd::read_header(const char * filename)
 void Mhd::parse_header()
 {
   map_ = ::parse_header(header_);
+}
+
+int Mhd::get_icon_index()
+{
+  if (isRGBImage(map_)) {
+    return ParserBase::RGBIcon;
+  }
+  auto it = map_.find("ElementType");
+  if (it != map_.end()) {
+    return ElementType2Index(it->second);
+  } else {
+    return ParserBase::UnknownIcon;
+  }
 }

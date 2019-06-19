@@ -5,6 +5,7 @@
 
 namespace nrrd
 {
+  std::string read_header(const TCHAR* filename);
   std::string read_header(const char* filename);
 //  std::string read_header(IStream *pstream);
 //  std::string read_header(const wchar_t* filename);
@@ -15,9 +16,12 @@ namespace nrrd
 class Nrrd : public ParserBase
 {
 public:
-  virtual void read_header(const char* filename);
-  virtual void parse_header();
+  Nrrd();
   ~Nrrd() = default;
+  void read_header(const TCHAR* filename);
+  void read_header(const char* filename);
+  void parse_header();
+  int get_icon_index();
 };
 
 #endif /* NRRD_H */

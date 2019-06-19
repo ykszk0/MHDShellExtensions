@@ -1,4 +1,4 @@
-regsvr32 MHDInfotip.dll
+rem regsvr32 MHDInfotip.dll
 regsvr32 MHDIconHandler.dll
-regsvr32 MHDPreviewHandler.dll
-regsvr32 MHDPropertyStore.dll
+rem regsvr32 MHDPreviewHandler.dll
+rem regsvr32 MHDPropertyStore.dll

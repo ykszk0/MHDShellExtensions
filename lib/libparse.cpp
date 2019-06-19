@@ -11,7 +11,7 @@ const TCHAR * ParserBase::get_file_extension(const TCHAR * filename)
       break;
     }
   }
-  return filename + i;
+  return filename + max(i, 0);
 }
 
 const std::string & ParserBase::get_header()
@@ -27,8 +27,8 @@ const header_map_type & ParserBase::get_map()
 bool ParserBase::check_file_extension(const TCHAR* filename)
 {
   auto ext = ParserBase::get_file_extension(filename);
-  for (int i = 0; i < sizeof(ext_set_); ++i) {
-    if (_tcscmp(ext, ext_set_[i])) {
+  for (const auto &target_ext : ext_set_) {
+    if (_tcscmp(ext, target_ext.c_str())==0) {
       return true;
     }
   }

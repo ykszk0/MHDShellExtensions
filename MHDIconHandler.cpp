@@ -1,8 +1,10 @@
 #include <windows.h>
 #include <shlwapi.h>
 #include <shlobj.h>
+#include <memory>
 #include "MHDIconHandler.h"
 #include "mhd.h"
+#include "nrrd.h"
 
 #pragma comment (lib, "shlwapi.lib")
 
@@ -10,7 +12,7 @@ static const CLSID CLSID_ExtractIconSample =
 { 0xdc2923e9, 0xa7c3, 0x49a8, { 0x99, 0x74, 0xf, 0x1a, 0x65, 0x18, 0x13, 0xbb } };
 const TCHAR g_szClsid[] = TEXT("{DC2923E9-A7C3-49A8-9974-0F1A651813BB}");
 const TCHAR g_szProgid[] = TEXT("MHDShellExtension");
-const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha") };
+const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd") };
 
 LONG      g_lLocks = 0;
 HINSTANCE g_hinstDll = NULL;
@@ -67,40 +69,6 @@ STDMETHODIMP_(ULONG) CExtractIcon::Release()
 
 namespace
 {
-  std::map<std::string,int> type2index = {
-    {"MET_CHAR",-101}, 
-    {"MET_UCHAR",-102}, 
-    {"MET_SHORT",-103}, 
-    {"MET_USHORT",-104}, 
-    {"MET_INT",-105}, 
-    {"MET_UINT",-106}, 
-    {"MET_LONG",-107}, 
-    {"MET_ULONG",-108}, 
-    {"MET_FLOAT",-109}, 
-    {"MET_DOUBLE",-110} 
-  };
-  int ElementType2Index(const std::string &type)
-  {
-    auto it = type2index.find(type);
-    if (it != type2index.end()) {
-      return it->second;
-    } else {
-      return -100;
-    }
-  }
-  bool isRGBImage(const header_map_type &header)
-  {
-    auto it = header.find("ElementType");
-    if (it != header.end()) {
-      auto it2 = header.find("ElementNumberOfChannels");
-      if (it2 != header.end()) {
-        if (it->second == "MET_UCHAR" && it2->second == "3") {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
 }
 
 STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
@@ -111,20 +79,25 @@ STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT 
   GetModuleFileName(g_hinstDll,szModulePath, MAX_PATH);
   lstrcpyn(szIconFile, szModulePath, cchMax);
   *pwFlags = 0;
+  std::shared_ptr<ParserBase> parsers[] = { std::make_shared<Mhd>(), std::make_shared<Nrrd>() };
   try {
-    auto header = parse_header(read_header(m_szFilename));
-    if (isRGBImage(header)) {
-      *piIndex = -111;
+    auto ext = ParserBase::get_file_extension(m_szFilename);
+    std::shared_ptr<ParserBase> parser = nullptr;
+    for (int i = 0; i < sizeof(parsers); ++i) {
+      if (parsers[i]->check_file_extension(ext)) {
+        parser = parsers[i];
+        break;
+      }
+    }
+    if (parser == nullptr) { // no valid parser was found
+      *piIndex = ParserBase::UnknownIcon; // unknown icon
       return S_OK;
     }
-    auto it = header.find("ElementType");
-    if (it != header.end()) {
-      *piIndex = ElementType2Index(it->second);
-    } else {
-      *piIndex = 0;
-    }
+    parser->read_header(m_szFilename);
+    parser->parse_header();
+    *piIndex = parser->get_icon_index();
   } catch (std::exception &e) {
-    *piIndex = -100; // unknown icon
+    *piIndex = ParserBase::UnknownIcon; // unknown icon
   }
   return S_OK;
 }

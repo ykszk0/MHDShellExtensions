@@ -12,9 +12,12 @@ header_map_type parse_header(std::string header);
 class Mhd : public ParserBase
 {
 public:
-  virtual void read_header(const char* filename);
-  virtual void parse_header();
+  Mhd();
   ~Mhd() = default;
+  void read_header(const TCHAR* filename);
+  void read_header(const char* filename);
+  void parse_header();
+  int get_icon_index();
 };
 
 #endif /* MHD_H */
