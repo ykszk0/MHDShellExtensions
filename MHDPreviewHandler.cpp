@@ -2,7 +2,7 @@
 #include <shlwapi.h>
 #include <shlobj.h>
 #include "MHDPreviewHandler.h"
-#include "libmhd.h"
+#include "mhd.h"
 
 #pragma comment (lib, "shlwapi.lib")
 

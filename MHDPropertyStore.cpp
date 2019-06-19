@@ -3,7 +3,7 @@
 #include <shlobj.h>
 #include <propkey.h>
 #include <propvarutil.h>
-#include "libmhd.h"
+#include "mhd.h"
 #include "MHDPropertyStore.h"
 #include <propkey.h>
 #include <algorithm>

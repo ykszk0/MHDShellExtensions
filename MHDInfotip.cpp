@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "MHDInfotip.h"
-#include "libmhd.h"
+#include "mhd.h"
 
 #pragma comment (lib, "shlwapi.lib")
 
