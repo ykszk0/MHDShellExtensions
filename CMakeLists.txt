@@ -2,13 +2,14 @@ PROJECT (MHDShellExtensions)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 ADD_LIBRARY(libparse
+  lib/libparse.h
   lib/mhd.h lib/mhd.cpp
   lib/nrrd.h lib/nrrd.cpp
   )
 
 INCLUDE_DIRECTORIES(lib)
-# ADD_EXECUTABLE(debug_nrrd debug_nrrd.cpp)
-# TARGET_LINK_LIBRARIES(debug_nrrd libnrrd)
+ADD_EXECUTABLE(debug_nrrd debug_nrrd.cpp)
+TARGET_LINK_LIBRARIES(debug_nrrd libparse)
 
 OPTION(BUILD_PARSER "Build parser for debugging" OFF)
 IF(BUILD_PARSER)
