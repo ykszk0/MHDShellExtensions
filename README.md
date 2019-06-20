@@ -28,7 +28,7 @@ Shell extensions for mhd/mha image data.
 * Revert registry changes using backups.
  
 ## TOODs ##
-* [] Unit test
+* [ ] Unit test
 * [X] NRRD format (.nrrd) (icon handler only)
 * [ ] Analyze format (.hdr)
 
