@@ -1,5 +1,5 @@
 #include <iostream>
-#include "mhd.h"
+#include <mhd.h>
 using namespace std;
 
 int main(int argc, char *argv[])

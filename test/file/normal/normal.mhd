@@ -1,0 +1,4 @@
+ObjectType = Image
+NDims = 3
+DimSize = 128 128 128
+ElementDataFile = LOCAL
