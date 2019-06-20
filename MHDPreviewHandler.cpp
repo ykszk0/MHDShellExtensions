@@ -136,7 +136,7 @@ STDMETHODIMP CPreviewHandler::DoPreview(VOID)
   } catch (std::exception &e) {
     mbstowcs(w_header.data(), e.what(), buf_size);
   }
-  m_hwndPreview = CreateWindowEx(0, TEXT("EDIT"), w_header.data(), WS_CHILD | WS_VISIBLE | ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL, m_rc.left, m_rc.top, m_rc.right - m_rc.left, m_rc.bottom - m_rc.top, m_hwndParent, 0, 0, NULL);
+  m_hwndPreview = CreateWindowEx(0, TEXT("EDIT"), w_header.data(), WS_CHILD | WS_VISIBLE | ES_READONLY | ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL, m_rc.left, m_rc.top, m_rc.right - m_rc.left, m_rc.bottom - m_rc.top, m_hwndParent, 0, 0, NULL);
 
   if (m_hwndPreview == NULL) {
     return HRESULT_FROM_WIN32(GetLastError());
