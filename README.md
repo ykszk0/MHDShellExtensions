@@ -26,6 +26,11 @@ Shell extensions for mhd/mha image data.
 * In admin command prompt `unregister.bat`
 * ~~Delete some registry keys in case you need to :D~~
 * Revert registry changes using backups.
+ 
+## TOODs ##
+* [] Unit test
+* [X] NRRD format (.nrrd) (icon handler only)
+* [ ] Analyze format (.hdr)
 
 ## References ##
 * [Shell extension examples](http://eternalwindows.jp/shell/shellex/shellex00.html)
@@ -34,3 +39,11 @@ Shell extensions for mhd/mha image data.
 * [Icon handler example](https://www.codeproject.com/Articles/797/The-Complete-Idiot-s-Guide-to-Writing-Shell-Extens)
 * [File association](https://www.glamenv-septzen.net/view/14)
 * [File association](https://www.ipentec.com/document/windows-not-recovery-icon-in-extension-disassociation)
+
+## dev note ##
+Update dll
+1. unregister.bat
+2. close all the explorer windows
+3. restart explorer in the task manager
+4. register.bat
+5. do step 3 again
