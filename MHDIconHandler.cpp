@@ -5,6 +5,7 @@
 #include "MHDIconHandler.h"
 #include "mhd.h"
 #include "nrrd.h"
+#include "nifti.h"
 
 #pragma comment (lib, "shlwapi.lib")
 
@@ -12,7 +13,7 @@ static const CLSID CLSID_ExtractIconSample =
 { 0xdc2923e9, 0xa7c3, 0x49a8, { 0x99, 0x74, 0xf, 0x1a, 0x65, 0x18, 0x13, 0xbb } };
 const TCHAR g_szClsid[] = TEXT("{DC2923E9-A7C3-49A8-9974-0F1A651813BB}");
 const TCHAR g_szProgid[] = TEXT("MHDShellExtension");
-const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd") };
+const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd"), TEXT(".nii"), TEXT(".gz") };
 
 LONG      g_lLocks = 0;
 HINSTANCE g_hinstDll = NULL;
@@ -70,6 +71,11 @@ STDMETHODIMP_(ULONG) CExtractIcon::Release()
 namespace
 {
 }
+template <typename TYPE, std::size_t SIZE>
+std::size_t array_length(const TYPE (&array)[SIZE])
+{
+    return SIZE;
+}
 
 STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
 {
@@ -79,25 +85,25 @@ STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT 
   GetModuleFileName(g_hinstDll,szModulePath, MAX_PATH);
   lstrcpyn(szIconFile, szModulePath, cchMax);
   *pwFlags = 0;
-  std::shared_ptr<ParserBase> parsers[] = { std::make_shared<Mhd>(), std::make_shared<Nrrd>() };
+  std::shared_ptr<ParserBase> parsers[] = { std::make_shared<Mhd>(), std::make_shared<Nrrd>(), std::make_shared<Nifti>() };
   try {
     auto ext = ParserBase::get_file_extension(m_szFilename);
-    std::shared_ptr<ParserBase> parser = nullptr;
-    for (int i = 0; i < sizeof(parsers); ++i) {
+    std::shared_ptr<ParserBase> parser(nullptr);
+    for (int i = 0; i < array_length(parsers); ++i) {
       if (parsers[i]->check_file_extension(ext)) {
         parser = parsers[i];
         break;
       }
     }
-    if (parser == nullptr) { // no valid parser was found
-      *piIndex = ParserBase::UnknownIcon; // unknown icon
+    if (!parser) { // no proper parser was found
+      *piIndex = ParserBase::UnknownIcon;
       return S_OK;
     }
     parser->read_header(m_szFilename);
     parser->parse_header();
     *piIndex = parser->get_icon_index();
   } catch (std::exception &e) {
-    *piIndex = ParserBase::UnknownIcon; // unknown icon
+    *piIndex = ParserBase::UnknownIcon;
   }
   return S_OK;
 }

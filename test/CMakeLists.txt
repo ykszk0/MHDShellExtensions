@@ -1,6 +1,8 @@
 PROJECT (MHDShellExtensionsTest)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
+ADD_DEFINITIONS(-D_UNICODE)
+
 add_executable(normal normal.cpp)
 target_link_libraries(normal libparse)
 add_test(

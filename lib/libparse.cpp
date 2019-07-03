@@ -6,8 +6,12 @@
 const TCHAR * ParserBase::get_file_extension(const TCHAR * filename)
 {
   int i = _tcsclen(filename) - 1;
+  TCHAR *ext;
   for (; i >= 0; --i) {
     if (filename[i] == '.') {
+      if (_tcscmp(filename + i, TEXT(".gz")) == 0) {
+        continue;
+      }
       break;
     }
   }

@@ -2,11 +2,15 @@ PROJECT (MHDShellExtensions)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 ADD_DEFINITIONS(-D_UNICODE)
 
+add_subdirectory(zlib)
+INCLUDE_DIRECTORIES(zlib)
 ADD_LIBRARY(libparse
   lib/libparse.h lib/libparse.cpp
   lib/mhd.h lib/mhd.cpp
   lib/nrrd.h lib/nrrd.cpp
+  lib/nifti.h lib/nifti.cpp
   )
+target_link_libraries(libparse zlibstatic)
 
 INCLUDE_DIRECTORIES(lib)
 
