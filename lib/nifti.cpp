@@ -83,22 +83,21 @@ namespace nifti
     if (fd == NULL) {
       throw std::runtime_error(std::string("Failed to open file"));
     }
-    auto fd_deleter = [fd](void*) {_close(fd);};
-    std::unique_ptr<void*, decltype(fd_deleter)> fd_manager(nullptr, fd_deleter);
     auto gzf = gzdopen(fd, "rb");
     if (gzf == NULL) {
+      _close(fd);
       throw std::runtime_error(std::string("Failed to open file"));
     }
-    auto gzf_deleter = [gzf](void*) {gzclose(gzf);};
-    std::unique_ptr<void*, decltype(gzf_deleter)> gzf_manager(nullptr, gzf_deleter);
     constexpr int buf_size = nifti2_header_size;
     char buf[buf_size];
 
     auto bytes_read = gzread(gzf, buf, buf_size);
     if (bytes_read < nifti1_header_size) {
+      gzclose(gzf);
       throw std::runtime_error(std::string("The file is too small"));
     }
     read_header(buf, header);
+    gzclose(gzf);
   }
 
   //std::string read_header(const char* filename)
