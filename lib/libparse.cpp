@@ -1,6 +1,4 @@
 #include "libparse.h"
-#include "libparse.h"
-#include "libparse.h"
 #include <tchar.h>
 
 const TCHAR * ParserBase::get_file_extension(const TCHAR * filename)

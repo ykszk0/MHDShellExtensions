@@ -80,7 +80,7 @@ namespace nifti
   void read_header_gz_t(const CharType* filename, nifti_1_header *header)
   {
     auto fd = _topen(filename, _O_RDONLY | _O_BINARY);
-    if (fd == NULL) {
+    if (fd == -1) {
       throw std::runtime_error(std::string("Failed to open file"));
     }
     auto gzf = gzdopen(fd, "rb");
