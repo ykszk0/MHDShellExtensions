@@ -13,7 +13,12 @@ static const CLSID CLSID_ExtractIconSample =
 { 0xdc2923e9, 0xa7c3, 0x49a8, { 0x99, 0x74, 0xf, 0x1a, 0x65, 0x18, 0x13, 0xbb } };
 const TCHAR g_szClsid[] = TEXT("{DC2923E9-A7C3-49A8-9974-0F1A651813BB}");
 const TCHAR g_szProgid[] = TEXT("MHDShellExtension");
+
+#ifdef INCLUDE_GZ
 const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd"), TEXT(".nii"), TEXT(".gz") };
+#else
+const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd"), TEXT(".nii") };
+#endif
 
 LONG      g_lLocks = 0;
 HINSTANCE g_hinstDll = NULL;
