@@ -11,6 +11,7 @@ Shell extensions for mhd/mha image data.
 |![](screenshots/preview.png)|![](screenshots/infotip.png)|
 
 ## Install ##
+* Download zip file from release page
 * Move dll's and scripts to a permanent location (i.e. You can't relocate dll's after the installation)
 * Open command prompt as admin
 * Execute `backup_registry.bat`
