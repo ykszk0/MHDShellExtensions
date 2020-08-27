@@ -3,6 +3,7 @@
 #include <shlobj.h>
 #include <string>
 #include <vector>
+#include <clocale>
 #include "MHDInfotip.h"
 #include "mhd.h"
 
@@ -74,7 +75,7 @@ STDMETHODIMP CQueryInfo::GetInfoTip(DWORD dwFlags, LPWSTR *ppwszTip)
     constexpr int buf_size = 4096;
     std::vector<wchar_t> w_header(buf_size);
     try {
-      setlocale(LC_ALL, "");
+      std::setlocale(LC_ALL, "");
       auto header = read_header(m_szInfotip);
       if (header.empty()) {
         mbstowcs(w_header.data(), "Empty file.", buf_size);

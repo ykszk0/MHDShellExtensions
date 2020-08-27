@@ -2,6 +2,7 @@
 #include <shlwapi.h>
 #include <shlobj.h>
 #include <memory>
+#include <clocale>
 #include "MHDIconHandler.h"
 #include "mhd.h"
 #include "nrrd.h"
@@ -84,7 +85,7 @@ std::size_t array_length(const TYPE (&array)[SIZE])
 
 STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
 {
-  setlocale(LC_ALL, "");
+  std::setlocale(LC_ALL, "");
 
   TCHAR szModulePath[MAX_PATH];
   GetModuleFileName(g_hinstDll,szModulePath, MAX_PATH);
