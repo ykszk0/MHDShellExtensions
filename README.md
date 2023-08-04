@@ -28,10 +28,13 @@ Shell extensions for mhd/mha image data.
 * ~~Delete some registry keys in case you need to :D~~
 * Revert registry changes using backups.
  
-## TOODs ##
-* [ ] Unit test
-* [X] NRRD format (.nrrd) (without properties)
-* [ ] Analyze format (.hdr)
+## TODO ##
+- Formats
+  - [X] mhd (.mhd, .mha)
+  - [X] Nifty (.nii, .nii.gz) (no properties)
+  * [X] NRRD format (.nrrd) (icon only)
+  - [ ] Analyze format (.hdr)
+- [ ] Unit tests
 
 ## References ##
 * [Shell extension examples](http://eternalwindows.jp/shell/shellex/shellex00.html)
