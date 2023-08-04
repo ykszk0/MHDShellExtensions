@@ -34,7 +34,7 @@ jobs:
 
     - name: Build
       # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cd build && cmake --build . --config Release
+      run: cd build && cmake --build --parallel . --config Release
 
     - name: Copy files
       run: |
@@ -43,26 +43,14 @@ jobs:
         copy scripts\\* package
       
     - name: Package files
-      run: powershell Compress-Archive -Path package\\* -DestinationPath MHDShellExtensions.zip
+      run: powershell Compress-Archive -Path package\\* -DestinationPath MHDShellExtensions-${{github.ref_name}}.zip
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Release
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        name: Release ${{ github.ref_name }}
         body: ${{ github.event.head_commit.message }}
         draft: false
         prerelease: false
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: MHDShellExtensions.zip
-        asset_name: MHDShellExtensions.zip
-        asset_content_type: application/zip
+        files: |
+          MHDShellExtensions-${{github.ref_name}}.zip
