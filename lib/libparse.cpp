@@ -1,5 +1,8 @@
 #include "libparse.h"
 #include <tchar.h>
+#include "mhd.h"
+#include "nrrd.h"
+#include "nifti.h"
 
 const TCHAR * ParserBase::get_file_extension(const TCHAR * filename)
 {
@@ -35,5 +38,27 @@ bool ParserBase::check_file_extension(const TCHAR* filename)
     }
   }
   return false;
+}
+
+template <typename TYPE, std::size_t SIZE>
+std::size_t static_array_length(const TYPE(&array)[SIZE])
+{
+  return SIZE;
+}
+
+std::unique_ptr<ParserBase> ParserBase::select_parser(const TCHAR* filename) {
+  std::unique_ptr<ParserBase> parsers[] = { std::make_unique<Mhd>(), std::make_unique<Nrrd>(), std::make_unique<Nifti>() };
+  try {
+    auto ext = ParserBase::get_file_extension(filename);
+    for (int i = 0; i < static_array_length(parsers); ++i) {
+      if (parsers[i]->check_file_extension(ext)) {
+        return std::move(parsers[i]);
+      }
+    }
+    return nullptr;
+  }
+  catch (std::exception& e) {
+    return nullptr;
+  }
 }
 

@@ -6,6 +6,7 @@
 #include <zlib.h>
 #include <memory>
 #include <fstream>
+#include <sstream>
 
 namespace
 {
@@ -129,6 +130,76 @@ void Nifti::read_header(const char * filename)
 void Nifti::parse_header()
 {
 }
+
+#define DT_CASE(TYPE) case DT_##TYPE: return #TYPE;
+std::string datatype2str(short datatype) {
+  switch (datatype) {
+  case DT_NONE:
+    return "None";
+    DT_CASE(BINARY);
+    DT_CASE(UINT8);
+    DT_CASE(INT8);
+    DT_CASE(UINT16);
+    DT_CASE(INT16);
+    DT_CASE(INT32);
+    DT_CASE(UINT32);
+    DT_CASE(INT64);
+    DT_CASE(UINT64);
+    DT_CASE(FLOAT64);
+    DT_CASE(FLOAT128);
+    DT_CASE(COMPLEX64);
+    DT_CASE(COMPLEX128);
+    DT_CASE(COMPLEX256);
+    DT_CASE(FLOAT32);
+    DT_CASE(RGB24);
+    DT_CASE(RGBA32);
+
+  default:
+    return "Unknown";
+  }
+}
+
+#define NIFTI_UNITS_CASE(UNIT) case NIFTI_UNITS_##UNIT: return #UNIT;
+std::string unit2str(short datatype) {
+  switch (datatype) {
+  case NIFTI_UNITS_UNKNOWN:
+    return "Unknown";
+    NIFTI_UNITS_CASE(METER);
+    NIFTI_UNITS_CASE(MM);
+    NIFTI_UNITS_CASE(MICRON);
+    NIFTI_UNITS_CASE(SEC);
+    NIFTI_UNITS_CASE(MSEC);
+    NIFTI_UNITS_CASE(USEC);
+    NIFTI_UNITS_CASE(HZ);
+    NIFTI_UNITS_CASE(PPM);
+    NIFTI_UNITS_CASE(RADS);
+  default:
+    return "Unknown";
+  }
+}
+
+
+template <typename T>
+std::string array2str(T arr[]) {
+  char* delim = ", ";
+  std::stringstream ss;
+  std::copy(arr, arr + sizeof(arr),
+    std::ostream_iterator<T>(ss, delim));
+  return ss.str();
+}
+
+std::string Nifti::get_text_representation()
+{
+  std::stringstream ss;
+  ss << std::string("Pixel type: ") + datatype2str(header_struct_.datatype) << '\n';
+  ss << std::string("Array size: ") + array2str(header_struct_.dim) << '\n';
+  ss << std::string("Pixel size: ") + array2str(header_struct_.pixdim) << '\n';
+  ss << std::string("Pixel spatial unit: ") + unit2str(header_struct_.xyzt_units) << '\n';
+  ss << std::string("Intent name: ") + header_struct_.intent_name << '\n';
+  ss << std::string("Description: ") + header_struct_.descrip << '\n';
+  return ss.str();
+}
+
 
 int Nifti::get_icon_index()
 {

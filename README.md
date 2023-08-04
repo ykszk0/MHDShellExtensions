@@ -30,7 +30,7 @@ Shell extensions for mhd/mha image data.
  
 ## TOODs ##
 * [ ] Unit test
-* [X] NRRD format (.nrrd) (icon handler only)
+* [X] NRRD format (.nrrd) (without properties)
 * [ ] Analyze format (.hdr)
 
 ## References ##

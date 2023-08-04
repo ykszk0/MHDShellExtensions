@@ -195,6 +195,12 @@ void Nrrd::parse_header()
   map_ = nrrd::parse_header(header_);
 }
 
+std::string Nrrd::get_text_representation()
+{
+  return "Not implemented.";
+}
+
+
 int Nrrd::get_icon_index()
 {
   auto it = map_.find("type");

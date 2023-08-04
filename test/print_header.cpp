@@ -1,22 +1,29 @@
 #include <iostream>
 #include <mhd.h>
+#include <nrrd.h>
+#include <nifti.h>
+#include <libparse.h>
+
 using namespace std;
 
-int main(int argc, char *argv[])
+int wmain(int argc, TCHAR *argv[])
 {
-  if (argc <= 1) {
-    cerr << "Usage:" << argv[0] << " <filename>" << endl;
+  if (argc != 2) {
+    wcerr << L"Usage:" << argv[0] << L" <filename>" << endl;
     return 1;
   }
   for (int i = 1; i < argc; ++i) {
-    string filename = argv[i];
+    auto filename = argv[1];
+    auto parser = ParserBase::select_parser(filename);
+    if (!parser) {
+      wcerr << L"No parser found" << endl;
+      return 1;
+    }
     try {
-      auto header = read_header(filename.c_str());
-      cout << header << endl;
-      auto parsed = parse_header(header);
-      cout << parsed.size() << endl;
+      parser->read_header(filename);
+      cout << parser->get_text_representation() << endl;
     } catch (std::exception &e) {
-      cerr << e.what() << endl;
+      wcerr << e.what() << endl;
       return 1;
     }
   }

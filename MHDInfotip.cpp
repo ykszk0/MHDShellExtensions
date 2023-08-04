@@ -12,7 +12,12 @@
 static const CLSID CLSID_Infotip =
 { 0x7d0dfea6, 0x324e, 0x4d87, { 0x98, 0x83, 0xa5, 0x2f, 0x79, 0x42, 0xb5, 0x20 } };
 const TCHAR g_szClsid[] = TEXT("{7D0DFEA6-324E-4D87-9883-A52F7942B520}");
-const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha") };
+#ifdef INCLUDE_GZ
+const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd"), TEXT(".nii"), TEXT(".gz") };
+#else
+const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd"), TEXT(".nii") };
+#endif
+
 
 LONG      g_lLocks = 0;
 HINSTANCE g_hinstDll = NULL;
@@ -76,12 +81,14 @@ STDMETHODIMP CQueryInfo::GetInfoTip(DWORD dwFlags, LPWSTR *ppwszTip)
     std::vector<wchar_t> w_header(buf_size);
     try {
       std::setlocale(LC_ALL, "");
-      auto header = read_header(m_szInfotip);
-      if (header.empty()) {
-        mbstowcs(w_header.data(), "Empty file.", buf_size);
-      } else {
-        mbstowcs(w_header.data(), header.c_str(), buf_size);
-      }
+			auto parser = ParserBase::select_parser(m_szInfotip);
+			if (!parser) {
+        mbstowcs(w_header.data(), "Invalid file extension", buf_size);
+			} else {
+        parser->read_header(m_szInfotip);
+        parser->parse_header();
+        mbstowcs(w_header.data(), parser->get_text_representation().c_str(), buf_size);
+			}
     } catch (std::exception &e) {
       mbstowcs(w_header.data(), e.what(), buf_size);
     }

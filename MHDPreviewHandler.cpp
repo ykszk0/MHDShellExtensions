@@ -10,7 +10,11 @@ static const CLSID CLSID_PreviewHandlerSample =
 { 0x82a02ea0, 0x8766, 0x4a02, { 0xbd, 0x8d, 0x91, 0x7, 0xa, 0x2b, 0x85, 0x6b } };
 const TCHAR g_szClsid[] = TEXT("{82A02EA0-8766-4A02-BD8D-91070A2B856B}");
 const TCHAR g_szHandlerName[] = TEXT("MHD Preview Handler");
-const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha") };
+#ifdef INCLUDE_GZ
+const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd"), TEXT(".nii"), TEXT(".gz") };
+#else
+const TCHAR* g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd"), TEXT(".nii") };
+#endif
 
 LONG      g_lLocks = 0;
 HINSTANCE g_hinstDll = NULL;
@@ -28,7 +32,7 @@ CPreviewHandler::CPreviewHandler()
 	m_hwndParent = NULL;
 	m_hwndPreview = NULL;
 	m_pSite = NULL;
-  m_pStream = NULL;
+	m_pPathFile = NULL;
 
 	LockModule(TRUE);
 }
@@ -49,8 +53,8 @@ STDMETHODIMP CPreviewHandler::QueryInterface(REFIID riid, void **ppvObject)
 		*ppvObject = static_cast<IObjectWithSite *>(this);
 	else if (IsEqualIID(riid, IID_IOleWindow))
 		*ppvObject = static_cast<IOleWindow *>(this);
-	else if (IsEqualIID(riid, IID_IInitializeWithStream))
-		*ppvObject = static_cast<IInitializeWithStream *>(this);
+	else if (IsEqualIID(riid, IID_IInitializeWithFile))
+		*ppvObject = static_cast<IInitializeWithFile *>(this);
 	else
 		return E_NOINTERFACE;
 
@@ -119,21 +123,25 @@ std::string correct_newline(const std::string &lines)
 }
 STDMETHODIMP CPreviewHandler::DoPreview(VOID)
 {
-  if (m_hwndPreview != NULL || m_pStream == NULL)
+	if (m_hwndPreview != NULL || m_pPathFile == NULL)
     return E_FAIL;
 
   constexpr int buf_size = 4096;
   std::string header;
   std::vector<wchar_t> w_header(buf_size);
   try {
-    header = read_header(m_pStream);
-    header = correct_newline(header);
-    if (header.empty()) {
-      mbstowcs(w_header.data(), "Empty file.", buf_size);
-    } else {
-      mbstowcs(w_header.data(), header.c_str(), buf_size);
+		auto parser = ParserBase::select_parser(m_pPathFile);
+		if (!parser) {
+			mbstowcs(w_header.data(), "Invalid file extension", buf_size);
+		}
+		else {
+			parser->read_header(m_pPathFile);
+			parser->parse_header();
+			auto text = correct_newline(parser->get_text_representation().c_str());
+			mbstowcs(w_header.data(), text.c_str(), buf_size);
     }
-  } catch (std::exception &e) {
+  }
+  catch (std::exception& e) {
     mbstowcs(w_header.data(), e.what(), buf_size);
   }
   m_hwndPreview = CreateWindowEx(0, TEXT("EDIT"), w_header.data(), WS_CHILD | WS_VISIBLE | ES_READONLY | ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL, m_rc.left, m_rc.top, m_rc.right - m_rc.left, m_rc.bottom - m_rc.top, m_hwndParent, 0, 0, NULL);
@@ -151,10 +159,10 @@ STDMETHODIMP CPreviewHandler::Unload(VOID)
 		DestroyWindow(m_hwndPreview);
 		m_hwndPreview = NULL;
 	}
-  if (m_pStream) {
-    m_pStream->Release();
-    m_pStream = NULL;
-  }
+	if (m_pPathFile) {
+		LocalFree(m_pPathFile);
+		m_pPathFile = NULL;
+	}
   if (m_pSite) {
     m_pSite->Release();
     m_pSite = NULL;
@@ -237,27 +245,24 @@ STDMETHODIMP CPreviewHandler::ContextSensitiveHelp(BOOL fEnterMode)
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP CPreviewHandler::Initialize(IStream *pstream, DWORD grfMode)
+IFACEMETHODIMP CPreviewHandler::Initialize(LPCWSTR pszFilePath, DWORD grfMode)
 {
-
   HRESULT hr = E_INVALIDARG;
-  if (pstream)
+  if (pszFilePath)
   {
     // Initialize can be called more than once, so release existing valid 
-    // m_pStream.
-    if (m_pStream)
+    // m-pPathFile.
+    if (m_pPathFile)
     {
-      m_pStream->Release();
-      m_pStream = NULL;
+      LocalFree(m_pPathFile);
+      m_pPathFile = NULL;
     }
 
-    m_pStream = pstream;
-    m_pStream->AddRef();
+    m_pPathFile = StrDup(pszFilePath);
     hr = S_OK;
   }
   return hr;
 }
-
 
 // CClassFactory
 

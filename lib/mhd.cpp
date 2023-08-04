@@ -131,6 +131,16 @@ std::string read_header(const wchar_t * filename)
   return read_header_t(filename);
 }
 
+std::string Mhd::get_text_representation()
+{
+  if (header_.empty()) {
+    return "Empty file";
+  }
+  else {
+    return header_;
+  }
+}
+
 std::map<std::string, std::string> parse_header(std::string header)
 {
   auto map = std::map<std::string, std::string>();

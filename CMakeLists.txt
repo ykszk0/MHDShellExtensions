@@ -4,6 +4,7 @@ ADD_DEFINITIONS(-D_UNICODE)
 
 add_subdirectory(zlib)
 INCLUDE_DIRECTORIES(zlib)
+
 ADD_LIBRARY(libparse
   lib/libparse.h lib/libparse.cpp
   lib/mhd.h lib/mhd.cpp
@@ -18,6 +19,11 @@ OPTION(BUILD_TEST "Enable testing" OFF)
 IF(BUILD_TEST)
   enable_testing()
   add_subdirectory(test)
+ENDIF()
+
+OPTION(INCLUDE_GZ "Enable .nii.gz" OFF)
+IF(INCLUDE_GZ)
+add_definitions(-DINCLUDE_GZ)
 ENDIF()
 
 ADD_LIBRARY(MHDInfotip SHARED

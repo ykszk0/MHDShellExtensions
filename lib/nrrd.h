@@ -21,6 +21,7 @@ public:
   void read_header(const TCHAR* filename);
   void read_header(const char* filename);
   void parse_header();
+  std::string get_text_representation();
   int get_icon_index();
 };
 

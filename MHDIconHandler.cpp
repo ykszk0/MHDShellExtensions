@@ -74,15 +74,6 @@ STDMETHODIMP_(ULONG) CExtractIcon::Release()
 	return m_cRef;
 }
 
-namespace
-{
-}
-template <typename TYPE, std::size_t SIZE>
-std::size_t array_length(const TYPE (&array)[SIZE])
-{
-    return SIZE;
-}
-
 STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT cchMax, int *piIndex, UINT *pwFlags)
 {
   std::setlocale(LC_ALL, "");
@@ -93,14 +84,7 @@ STDMETHODIMP CExtractIcon::GetIconLocation(UINT uFlags, LPTSTR szIconFile, UINT 
   *pwFlags = 0;
   std::shared_ptr<ParserBase> parsers[] = { std::make_shared<Mhd>(), std::make_shared<Nrrd>(), std::make_shared<Nifti>() };
   try {
-    auto ext = ParserBase::get_file_extension(m_szFilename);
-    std::shared_ptr<ParserBase> parser(nullptr);
-    for (int i = 0; i < array_length(parsers); ++i) {
-      if (parsers[i]->check_file_extension(ext)) {
-        parser = parsers[i];
-        break;
-      }
-    }
+		auto parser = ParserBase::select_parser(m_szFilename);
     if (!parser) { // no proper parser was found
       *piIndex = ParserBase::UnknownIcon;
       return S_OK;

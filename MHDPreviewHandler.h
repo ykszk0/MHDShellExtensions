@@ -2,7 +2,7 @@
 #define MHDPREVIEWHANDLER_H
 #include <vector>
 
-class CPreviewHandler : public IPreviewHandler, public IObjectWithSite, public IOleWindow, public IInitializeWithStream
+class CPreviewHandler : public IPreviewHandler, public IObjectWithSite, public IOleWindow, public IInitializeWithFile
 {
 public:
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppvObject);
@@ -23,7 +23,7 @@ public:
 	STDMETHODIMP GetWindow(HWND *phwnd);
 	STDMETHODIMP ContextSensitiveHelp(BOOL fEnterMode);
 
-	STDMETHODIMP Initialize(IStream *pstream, DWORD grfMode);
+	IFACEMETHODIMP Initialize(LPCWSTR pszFilePath, DWORD grfMode);
 
 	CPreviewHandler();
 	~CPreviewHandler();
@@ -34,7 +34,7 @@ private:
 	HWND                 m_hwndPreview;
 	RECT                 m_rc;
 	IUnknown             *m_pSite;
-  IStream *m_pStream;
+	LPWSTR m_pPathFile;
 };
 
 class CClassFactory : public IClassFactory
