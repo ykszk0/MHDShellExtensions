@@ -3,6 +3,7 @@
 #include <shlobj.h>
 #include <propkey.h>
 #include <propvarutil.h>
+#include "libparse.h"
 #include "mhd.h"
 #include "MHDPropertyStore.h"
 #include <propkey.h>
@@ -16,7 +17,11 @@ static const CLSID CLSID_PropertyStoreSample =
 { 0xc0ef8573, 0x7dcb, 0x43a1, { 0x99, 0x47, 0xd5, 0x75, 0xd5, 0x7d, 0xb0, 0xc5 } };
 const TCHAR g_szClsid[] = TEXT("{C0EF8573-7DCB-43A1-9947-D575D57DB0C5}");
 const TCHAR g_szHandlerName[] = TEXT("MHD Property Handler");
-const TCHAR *g_szExts[] = { TEXT(".mhd"), TEXT(".mha") };
+#ifdef INCLUDE_GZ
+const TCHAR *g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd"), TEXT(".nii"), TEXT(".gz") };
+#else
+const TCHAR *g_szExts[] = { TEXT(".mhd"), TEXT(".mha"), TEXT(".nrrd"), TEXT(".nii") };
+#endif
 
 const PROPERTYKEY g_propKeySupport[] = {PKEY_Kind, PKEY_KindText,PKEY_Image_BitDepth,PKEY_Image_Dimensions};
 //const PROPERTYKEY g_propKeySupport[] = {PKEY_Keywords};
@@ -60,8 +65,8 @@ STDMETHODIMP CPropertyStore::QueryInterface(REFIID riid, void **ppvObject)
 		*ppvObject = static_cast<IPropertyStore *>(this);
 	else if (IsEqualIID(riid, IID_IPropertyStoreCapabilities))
 		*ppvObject = static_cast<IPropertyStoreCapabilities *>(this);
-	else if (IsEqualIID(riid, IID_IInitializeWithStream))
-		*ppvObject = static_cast<IInitializeWithStream *>(this);
+	else if (IsEqualIID(riid, IID_IInitializeWithFile))
+		*ppvObject = static_cast<IInitializeWithFile *>(this);
 	else
 		return E_NOINTERFACE;
 
@@ -197,6 +202,7 @@ void set_prop_str(PROPVARIANT &propvar, IPropertyStoreCache *pCache, const wchar
   PropVariantClear(&propvar);
 }
 std::map<std::string, int> ElementTypeMap = {
+  // MHD
   {"MET_CHAR",8},
   {"MET_UCHAR",8},
   {"MET_SHORT",16},
@@ -206,9 +212,34 @@ std::map<std::string, int> ElementTypeMap = {
   {"MET_LONG",64},
   {"MET_ULONG",64},
   {"MET_FLOAT",32},
-  {"MET_DOUBLE",64}
+  {"MET_DOUBLE",64},
+  // NIFTI
+  {"UINT8",8},
+  {"INT8",8},
+  {"UINT16",16},
+  {"INT16",16},
+  {"UINT32",32},
+  {"INT32",32},
+  {"UINT64",64},
+  {"INT64",64},
+  {"FLOAT32",32},
+  {"FLOAT64",64},
+  {"FLOAT128",128},
+  {"RGB24", 24},
+  {"RGBA32", 32},
+  // NRRD
+  {"uchar", 8},
+  {"short", 16},
+  {"ushort", 16},
+  {"int", 32},
+  {"uint", 32},
+  {"float", 32},
+  {"double", 64},
 };
+
+#define MAP_IDENTITY(KEY) {KEY, KEY}
 std::map<std::string, char*> ElementType2Text = {
+  // MHD
   {"MET_CHAR","char"},
   {"MET_UCHAR","unsigned char"},
   {"MET_SHORT","short"},
@@ -218,7 +249,33 @@ std::map<std::string, char*> ElementType2Text = {
   {"MET_LONG","long"},
   {"MET_ULONG","unsigned long"},
   {"MET_FLOAT","float"},
-  {"MET_DOUBLE","double"}
+  {"MET_DOUBLE","double"},
+  // NIFTI
+  MAP_IDENTITY("UINT8"),
+  MAP_IDENTITY("INT8"),
+  MAP_IDENTITY("UINT16"),
+  MAP_IDENTITY("INT16"),
+  MAP_IDENTITY("UINT32"),
+  MAP_IDENTITY("INT32"),
+  MAP_IDENTITY("UINT64"),
+  MAP_IDENTITY("INT64"),
+  MAP_IDENTITY("UINT128"),
+  MAP_IDENTITY("INT128"),
+  MAP_IDENTITY("FLOAT32"),
+  MAP_IDENTITY("FLOAT64"),
+  MAP_IDENTITY("FLOAT128"),
+  MAP_IDENTITY("RGB24"),
+  MAP_IDENTITY("RGBA32"),
+  // NRRD
+  MAP_IDENTITY("uchar"),
+  MAP_IDENTITY("char"),
+  MAP_IDENTITY("short"),
+  MAP_IDENTITY("ushort"),
+  MAP_IDENTITY("int"),
+  MAP_IDENTITY("uint"),
+  MAP_IDENTITY("float"),
+  MAP_IDENTITY("double"),
+
 };
 int ElementType2bits(const std::string &str)
 {
@@ -264,7 +321,8 @@ std::vector<T> str2vec(std::string str, char delim)
   return v;
 }
 }
-STDMETHODIMP CPropertyStore::Initialize(IStream *pstream, DWORD grfMode)
+
+STDMETHODIMP CPropertyStore::Initialize(LPCWSTR pszFileName, DWORD dwMode)
 {
   PROPVARIANT propvar;
 
@@ -276,8 +334,10 @@ STDMETHODIMP CPropertyStore::Initialize(IStream *pstream, DWORD grfMode)
 
   header_map_type header_map;
   try {
-    auto header = read_header(pstream);
-    header_map = parse_header(header);
+    auto parser = ParserBase::select_parser(pszFileName);
+    parser->read_header(pszFileName);
+    parser->parse_header();
+    header_map = parser->get_map();
   } catch (std::exception &e) {
     mbstowcs(w_buf.data(), e.what(), buf_size);
     set_prop_str(propvar, m_pCache, w_buf.data(), PKEY_Comment);
@@ -335,9 +395,6 @@ STDMETHODIMP CPropertyStore::Initialize(IStream *pstream, DWORD grfMode)
       set_prop_uint(propvar, m_pCache, IMAGE_COMPRESSION_UNCOMPRESSED, PKEY_Image_Compression);
     }
   }
-
-  m_pStream = pstream;
-  m_pStream->AddRef();
 
   return S_OK;
 }

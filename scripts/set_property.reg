@@ -11,3 +11,15 @@ Windows Registry Editor Version 5.00
 "FullDetails"="prop:System.PropGroup.Image;System.Image.Dimensions;System.Comment;System.Keywords;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.BitDepth;System.Image.Compression;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemType;System.ItemFolderPathDisplay;System.DateCreated;System.DateModified;System.Size;System.FileAttributes;System.OfflineAvailability;System.OfflineStatus;System.SharedWith;System.FileOwner;System.ComputerName"
 "InfoTip"="prop:System.ItemTypeText;*System.Image.Dimensions;*System.Comment;*System.Keywords;*System.Size"
 "ExtendedTileInfo"="prop:System.ItemType;*System.Image.Dimensions"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.nii]
+"PreviewDetails"="prop:System.Image.Dimensions;System.Comment;System.Keywords"
+"FullDetails"="prop:System.PropGroup.Image;System.Image.Dimensions;System.Comment;System.Keywords;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.BitDepth;System.Image.Compression;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemType;System.ItemFolderPathDisplay;System.DateCreated;System.DateModified;System.Size;System.FileAttributes;System.OfflineAvailability;System.OfflineStatus;System.SharedWith;System.FileOwner;System.ComputerName"
+"InfoTip"="prop:System.ItemTypeText;*System.Image.Dimensions;*System.Comment;*System.Keywords;*System.Size"
+"ExtendedTileInfo"="prop:System.ItemType;*System.Image.Dimensions"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.nrrd]
+"PreviewDetails"="prop:System.Image.Dimensions;System.Comment;System.Keywords"
+"FullDetails"="prop:System.PropGroup.Image;System.Image.Dimensions;System.Comment;System.Keywords;System.Image.HorizontalSize;System.Image.VerticalSize;System.Image.BitDepth;System.Image.Compression;System.PropGroup.FileSystem;System.ItemNameDisplay;System.ItemType;System.ItemFolderPathDisplay;System.DateCreated;System.DateModified;System.Size;System.FileAttributes;System.OfflineAvailability;System.OfflineStatus;System.SharedWith;System.FileOwner;System.ComputerName"
+"InfoTip"="prop:System.ItemTypeText;*System.Image.Dimensions;*System.Comment;*System.Keywords;*System.Size"
+"ExtendedTileInfo"="prop:System.ItemType;*System.Image.Dimensions"

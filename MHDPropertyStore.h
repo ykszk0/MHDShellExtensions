@@ -1,7 +1,7 @@
 #ifndef MHDPROPERTYSTORE_H
 #define MHDPROPERTYSTORE_H
 
-class CPropertyStore : public IPropertyStore, public IPropertyStoreCapabilities, public IInitializeWithStream
+class CPropertyStore : public IPropertyStore, public IPropertyStoreCapabilities, public IInitializeWithFile
 {
 public:
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppvObject);
@@ -16,7 +16,7 @@ public:
 
 	STDMETHODIMP IsPropertyWritable(REFPROPERTYKEY key);
 
-	STDMETHODIMP Initialize(IStream *pstream, DWORD grfMode);
+	STDMETHODIMP Initialize(LPCWSTR pszFileName, DWORD dwMode) override;
 
 	CPropertyStore();
 	~CPropertyStore();

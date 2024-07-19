@@ -127,10 +127,6 @@ void Nifti::read_header(const char * filename)
   //nifti::read_header_t(filename, &header_struct_);
 }
 
-void Nifti::parse_header()
-{
-}
-
 #define DT_CASE(TYPE) case DT_##TYPE: return #TYPE;
 std::string datatype2str(short datatype) {
   switch (datatype) {
@@ -180,8 +176,7 @@ std::string unit2str(short datatype) {
 
 
 template <typename T>
-std::string array2str(T arr[]) {
-  char* delim = ", ";
+std::string array2str(T arr[], char* delim) {
   std::stringstream ss;
   std::copy(arr, arr + sizeof(arr),
     std::ostream_iterator<T>(ss, delim));
@@ -192,8 +187,8 @@ std::string Nifti::get_text_representation()
 {
   std::stringstream ss;
   ss << std::string("Pixel type: ") + datatype2str(header_struct_.datatype) << '\n';
-  ss << std::string("Array size: ") + array2str(header_struct_.dim) << '\n';
-  ss << std::string("Pixel size: ") + array2str(header_struct_.pixdim) << '\n';
+  ss << std::string("Array size: ") + array2str(header_struct_.dim, ", ") << '\n';
+  ss << std::string("Pixel size: ") + array2str(header_struct_.pixdim, ", ") << '\n';
   ss << std::string("Pixel spatial unit: ") + unit2str(header_struct_.xyzt_units) << '\n';
   ss << std::string("Intent name: ") + header_struct_.intent_name << '\n';
   ss << std::string("Description: ") + header_struct_.descrip << '\n';
@@ -205,3 +200,13 @@ int Nifti::get_icon_index()
 {
   return ElementType2Index(header_struct_.datatype);
 }
+
+void Nifti::parse_header()
+{
+  header_map_type map;
+  map.insert(std::make_pair("DimSize", array2str(header_struct_.dim, " ")));
+  map.insert(std::make_pair("ElementType", datatype2str(header_struct_.datatype)));
+  map.insert(std::make_pair("ElementSpacing", array2str(header_struct_.pixdim, " ")));
+  map_ = map;
+}
+

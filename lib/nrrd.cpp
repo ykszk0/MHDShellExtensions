@@ -171,7 +171,18 @@ namespace nrrd
         start = i + 1;
       }
     }
-    return map;
+    // Copy entries to mimic mhd header
+    const std::tuple<char*, char*> copy_keys[] = { {"type", "ElementType"}, {"sizes", "DimSize"} };
+    for (const auto& copy_key_pair : copy_keys) {
+      auto copy_key = std::get<0>(copy_key_pair);
+      auto new_key = std::get<1>(copy_key_pair);
+      auto it = map.find(copy_key);
+      if (it != map.end()) {
+        map.insert(std::make_pair(new_key, it->second));
+      }
+
+    }
+  return map;
   }
 }
 
